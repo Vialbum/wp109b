@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<h1 style="color:#0095DD;text-align:center;font-size:50px;background-color:white;">打磚塊</h1>
+<pre style="text-align:center;font-size:20px;">請先用滑鼠點選遊戲畫面，並用鍵盤← →鍵控制擊球，速度並非一成不變喔~祝好運!!!</pre>
+
+<canvas id="myCanvas" width="800" height="480"></canvas>
+
+<script>
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+    var x = canvas.width/2;
+	var y = canvas.height-30;
+	var dx = 1.5;
+	var dy = -1.5;
+    var ballRadius = 10;
+    
+    var paddleHeight = 15;	/* 球桿 */
+	var paddleWidth = 75;
+	var paddleX = (canvas.width-paddleWidth)/2;
+	var rightPressed = false;
+	var leftPressed = false;
+    
+    var brickRowCount = 5;		/* 磚變數 */
+	var brickColumnCount = 9;
+	var brickWidth = 75;
+	var brickHeight = 20;
+	var brickPadding = 10;
+	var brickOffsetTop = 30;
+	var brickOffsetLeft = 30;
+    
+    var score = 0;		/* 分數 */
+    
+    var bricks = [];		/* 磚 */
+	for(var c=0; c<brickColumnCount; c++) 
+    {
+    	bricks[c] = [];
+    for(var r=0; r<brickRowCount; r++) 
+    {
+        bricks[c][r] = { x: 0, y: 0, status: 1 };
+    }
+	}
+    
+    document.addEventListener("keydown", keyDownHandler, false); /* 左右 */
+	document.addEventListener("keyup", keyUpHandler, false);
+    function keyDownHandler(e) 
+    {
+    	if(e.key == "Right" || e.key == "ArrowRight") 
+    	{
+        	rightPressed = true;
+    	}
+    	else if(e.key == "Left" || e.key == "ArrowLeft") 
+    	{
+        	leftPressed = true;
+    	}
+	}
+
+	function keyUpHandler(e) {
+    	if(e.key == "Right" || e.key == "ArrowRight") {
+        	rightPressed = false;
+    	}
+    	else if(e.key == "Left" || e.key == "ArrowLeft") {
+        	leftPressed = false;
+    	}
+	}
+
+	function collisionDetection() 	/* 碰撞檢測 */
+    {
+    	for(var c=0; c<brickColumnCount; c++) 
+        {
+        	for(var r=0; r<brickRowCount; r++) 
+            {
+            	var b = bricks[c][r];
+            	if(b.status == 1) 
+                {
+                	if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) 
+                    {
+                    	dy = -dy;
+                    	b.status = 0;
+                        score++;
+                        if(score == brickRowCount*brickColumnCount) 
+                        {
+                        	alert("YOU WIN, CONGRATULATIONS!");
+                        	document.location.reload();
+                        	clearInterval(interval); 
+                        }
+                        if(score == 20)
+                        {
+                        	paddleWidth = 100;
+                            dx = dx * 2;
+							dy = dy * 2;
+                        }
+                        if(score == 40)
+                        {
+                        	paddleWidth = 150;
+                            dx = dx * 3;
+							dy = dy * 3;
+                        }
+                	}
+            	}
+        	}
+    	}
+	}
+    
+    function drawBall() /* 球 */
+    {
+    	ctx.beginPath();
+    	ctx.arc(x, y, 10, 0, Math.PI*2);
+    	ctx.fillStyle = "#0095DD";
+    	ctx.fill();
+    	ctx.closePath();
+	}
+    function drawPaddle() /* 球桿 */
+    {
+    	ctx.beginPath();
+    	ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    	ctx.fillStyle = "#0095DD";
+    	ctx.fill();
+    	ctx.closePath();
+	}
+    
+    function drawBricks() /* 建磚 */
+    {
+    	for(var c=0; c<brickColumnCount; c++) 
+    	{
+        	for(var r=0; r<brickRowCount; r++) 
+        	{
+            	if(bricks[c][r].status == 1)
+                {
+                	var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+            		var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+            		bricks[c][r].x = brickX;
+            		bricks[c][r].y = brickY;
+            		ctx.beginPath();
+            		ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            		ctx.fillStyle = "#0095DD";
+            		ctx.fill();
+            		ctx.closePath();
+                }
+        	}
+    	}
+	}
+	
+    function drawScore()  /* 分數 */
+    {
+    	ctx.font = "16px Arial";
+    	ctx.fillStyle = "#0095DD";
+    	ctx.fillText("Score: "+score, 8, 20);
+	}
+
+	function draw() /* 行動 */
+    {
+    	ctx.clearRect(0, 0, canvas.width, canvas.height);
+    	drawBall();		/* 行動激活區 */
+        drawPaddle();
+        drawBricks();
+        collisionDetection();
+        drawScore();
+    
+    	if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) /* 球對牆 */
+    	{
+        	dx = -dx;            
+    	}
+    	if(y + dy < ballRadius) 
+        {
+        	dy = -dy;
+    	}
+    	else if(y + dy > canvas.height-ballRadius) 
+        {
+        	if(x > paddleX && x < paddleX + paddleWidth) 
+        	{
+            	dy = -dy;
+        	}
+        	else 
+        	{
+            	alert("GAME OVER");
+            	document.location.reload();
+            	clearInterval(interval); 
+        	}
+    	}
+    
+    	if(rightPressed && paddleX < canvas.width-paddleWidth) 
+        {
+        	paddleX += 5;
+    	}
+    	else if(leftPressed && paddleX > 0) 
+        {
+        	paddleX -= 5;
+    	}
+    
+    	x += dx;
+    	y += dy;
+        requestAnimationFrame(draw);
+	}
+
+	draw();
+</script>
+
+</body>
+</html>

@@ -10,7 +10,7 @@
 
 ## 遊戲
 
-[遊戲程式碼](https://github.com/Vialbum/wp109b/blob/main/homework/hostflie.html)  
+[遊戲程式碼](https://github.com/Vialbum/wp109b/blob/main/homework/game.html)  
 
 以[參考網站](https://developer.mozilla.org/zh-TW/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript)的步驟一步一步慢慢做，  
 理解遊戲運作後，稍稍改變介面以及玩法，分數越高有獎勵，速度也隨之變快。
